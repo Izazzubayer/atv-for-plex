@@ -238,6 +238,34 @@
     return [mine || src].concat(rest);
   }
 
+  /* Drop a title from Continue Watching only. Other rows keep it. */
+  C.dropContinue = function (src) {
+    if (!src || !src.key) return [];
+    sync();
+    var changed = [];
+    for (var name in snaps) {
+      if (!snaps.hasOwnProperty(name)) continue;
+      var d = snaps[name].d;
+      if (!d || d.length === undefined) continue;
+      var hit = false;
+      for (var r = 0; r < d.length; r++) {
+        var row = d[r];
+        if (!row || row.title !== "Continue Watching" || !row.items) continue;
+        var next = [];
+        for (var i = 0; i < row.items.length; i++) if (row.items[i].key !== src.key) next.push(row.items[i]);
+        if (next.length !== row.items.length) {
+          d[r] = { title: row.title, items: next };
+          hit = true;
+        }
+      }
+      if (!hit) continue;
+      snaps[name].d = d.filter(function (row) { return !row || !row.items || row.items.length; });
+      changed.push(name);
+      C.save(name);
+    }
+    return changed;
+  };
+
   C.patchItem = function (src) {
     if (!src || !src.key) return [];
     sync();

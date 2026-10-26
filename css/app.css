@@ -975,35 +975,20 @@ html.preview #pv-frame { display: block; }
   transform: scaleX(0);
 }
 .p-bar.focus .p-track { transform: scaleY(2); }
-/* Time label floats clear above the (2x focused) track: its bottom edge
-   sits 20px over the track and the tick stops short of it. */
+/* Playhead tick. Elapsed and remaining live in .p-times, so the head
+   itself carries no clock. */
 .p-head {
   position: absolute;
-  top: -64px;
+  top: 0;
   left: 0;
   width: 0;
   opacity: 0;
   transition: opacity 250ms var(--ease);
 }
-.p-head span {
-  position: absolute;
-  left: -64px;
-  width: 128px;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
-  border-radius: 20px;
-  background: #fff;
-  color: #000;
-  font-size: 22px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
-}
 .p-head i {
   position: absolute;
   left: -1px;
-  top: 44px;
+  top: 2px;
   width: 2px;
   height: 10px;
   border-radius: 1px;
@@ -1122,7 +1107,7 @@ html.preview #pv-frame { display: block; }
   transition: opacity 320ms var(--ease), transform 420ms var(--ease);
 }
 .p-panel.on { opacity: 1; transform: none; }
-.p-tabs { margin-bottom: 22px; height: 48px; white-space: nowrap; }
+.p-tabs { display: none; }
 .p-tabs .season { height: 48px; line-height: 48px; font-size: 22px; padding: 0 22px; margin-right: 10px; }
 .p-tabs .season.sel::before { opacity: 1; }
 .p-tabs.focus .season.sel { color: #000; }
@@ -1223,8 +1208,10 @@ html.preview #pv-frame { display: block; }
 .p-list.focus .p-opt.at em { box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.6); }
 .p-list.focus .p-opt.at small { color: rgba(0,0,0,0.6); }
 
-/* Subtitles sit above the transport while it shows, and drop when it hides. */
+/* Subtitle painting is off. The element stays in the page so older
+   playback code can write to it without putting text on screen. */
 .p-subs {
+  display: none;
   position: absolute;
   left: 0;
   bottom: 330px;
@@ -1359,6 +1346,45 @@ html.preview #pv-frame { display: block; }
 }
 
 /* ---------- Toast ---------- */
+
+.sheet-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  background: rgba(0,0,0,0.55);
+  z-index: 80;
+  display: none;
+}
+.sheet-wrap.on { display: block; }
+.sheet {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 820px;
+  margin-left: -410px;
+  margin-top: -210px;
+  padding: 52px 56px 44px;
+  border-radius: 28px;
+  background: rgba(28,28,32,0.96);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 30px 70px rgba(0,0,0,0.55);
+  text-align: center;
+}
+.sheet-title {
+  margin: 0 0 10px;
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.sheet-sub {
+  margin: 0 0 36px;
+  font-size: 24px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.68);
+}
+.sheet .buttons { height: auto; white-space: normal; }
+.sheet .btn { display: block; margin: 16px auto; min-width: 560px; }
 
 #toast {
   position: absolute;

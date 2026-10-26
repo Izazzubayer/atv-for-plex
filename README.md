@@ -12,19 +12,15 @@ Built for Tizen 6 (Chromium 76). The layout is a fixed 1920×1080 canvas, the sa
 
 - **Watch Now, Movies, TV Shows, Search, and Library.** Shelves, a hero, and a poster grid, driven by the server you already run.
 - **A title page that knows where you left off.** Resume, start over, or mark it watched.
+- **Continue Watching, with a way out.** Hold OK on a title in that row and choose Remove from Continue Watching. It leaves the row. Resume on its page still works.
 - **My List.** Add a movie or show from its page. The list lives on the TV and syncs to a Plex playlist named My List, so it shows up in other Plex apps too.
-- **Audio and subtitles, including sidecars.** SRT, ASS, and VTT are drawn by the app. PGS and VobSub are burned in by your server, and only after you choose them. If a track cannot be loaded, the video keeps playing.
-- **Subtitle style.** Font, size, color, and background, saved on the TV.
-- **Direct play when the TV can take the file.** H.264 or HEVC in MP4, MKV, or MPEG-TS, with AAC, AC3, E-AC3, or MP3. Anything else is transcoded by your Plex server to 1080p H.264.
+- **Direct play when the TV can take the file.** H.264 or HEVC in MP4, MKV, or MPEG-TS, with AAC, AC3, E-AC3, or MP3. Anything else is transcoded by your Plex server to 1080p H.264. The player uses the file’s own audio and does not load a separate subtitle track.
 
 | | |
 | --- | --- |
 | ![Title page for a movie, with Resume, Play from Beginning, Add to My List, and Mark as Watched](docs/title.jpg) | ![My List, with the shelf of saved titles under the hero](docs/my-list.jpg) |
-| ![Player chrome over the picture, with the scrub bar and pause](docs/player.jpg) | ![Subtitle chooser listing SRT, external SRT, burned-in PGS, and ASS](docs/subtitles.jpg) |
 
-Audio tracks sit next to subtitles. Commentary, stereo, and surround are all selectable.
-
-![Audio chooser with Dolby Digital Plus, stereo, and a commentary track](docs/audio.jpg)
+![Player chrome over the picture, with the scrub bar and pause](docs/player.jpg)
 
 ## Requirements
 
@@ -54,8 +50,6 @@ Useful routes, all with `?preview=1`:
 | `&screen=library` | Library |
 | `&screen=detail&item=m693134` | A title page |
 | `&screen=player&item=m693134` | The player |
-| `&screen=player&item=m693134&panel=subtitles` | Subtitle chooser |
-| `&screen=player&item=m693134&panel=audio` | Audio chooser |
 | `&screen=login` | PIN sign-in |
 
 The posters and plot lines in preview mode were collected from public TMDB pages so the screenshots above could be taken. They are not shipped as a library, and they are not what the TV plays. On a television, every row comes from your Plex server.
@@ -97,9 +91,9 @@ A file plays directly when the video is H.264 or HEVC, the audio is AAC, AC3, E-
 
 Anything else goes through Plex’s universal transcoder as HLS, capped at 1080p and 20 Mbps, with a client profile that only asks for codecs Tizen 6 can decode. If direct play fails on the TV, the app retries once through that transcoder.
 
-Text subtitles are fetched from the server and painted over the picture, so turning them on does not force a transcode. Image subtitles cannot be painted that way. Choosing one asks the server to burn it in. If that burn fails, the app drops the track and keeps the video going.
+Playback does not switch audio tracks or load subtitles. Up on the remote opens a short info card. Left and right move through the video. The clock at each end of the bar is the only time on screen.
 
-Progress is reported back to Plex, so Resume lines up with your other players.
+Progress is reported back to Plex, so Resume lines up with your other players. Hold OK on something in Continue Watching to take it off that row without marking it watched.
 
 ## Project layout
 
@@ -109,7 +103,7 @@ index.html     screens
 css/app.css    the 1920×1080 layout
 js/app.js      tabs, remote, boot
 js/views.js    shelves, search, library, title page
-js/player.js   AVPlay, transport, subtitles
+js/player.js   AVPlay and the transport
 js/plex.js     PIN sign-in, library API, playback URLs
 js/cache.js    last-seen shelves, so Watch Now paints immediately
 js/util.js     shared helpers and icons

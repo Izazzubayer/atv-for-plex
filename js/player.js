@@ -1,26 +1,13 @@
-/* Player: Samsung AVPlay with direct play -> HLS transcode fallback, a
-   play/pause button under the timeline, and an Up panel (Info / Subtitles /
-   Audio). In preview mode playback is simulated over a still.
-
-   Subtitle handling follows the firmware workarounds proven in tessel:
-   - Text tracks (embedded or sidecar) are pulled from PMS at
-     /library/streams/{id} and painted here, so a font choice applies and
-     AVPlay's track map is never required. AVPlay's own subtitle plane stays
-     silent except when the file's tracks were only visible to AVPlay.
-   - Image tracks (PGS, VobSub) are burned by the transcoder. That is the
-     only case that restarts playback to show a subtitle.
-   - setSelectTrack('AUDIO') throws while PAUSED and keeps draining the old
-     track's buffer, so audio switches resume briefly, flush with a small
-     seek back, then re-pause. */
+/* Player: Samsung AVPlay with direct play, then HLS transcode if the TV
+   rejects the file. Play/pause sits under the timeline. Up opens Info.
+   The TV plays the file's own audio and does not load a subtitle track.
+   In preview mode playback is simulated over a still. */
 (function () {
   var A = window.ATV;
   var P = A.Plex;
 
   var TABS = [
-    { id: "info", label: "Info" },
-    { id: "subtitles", label: "Subtitles" },
-    { id: "audio", label: "Audio" },
-    { id: "style", label: "Style" }
+    { id: "info", label: "Info" }
   ];
   var LIST_ROWS = 5;
   var OPT_H = 64;
@@ -139,7 +126,6 @@
     chrome = root.querySelector(".p-chrome");
     fill = root.querySelector(".p-fill");
     head = root.querySelector(".p-head");
-    headTime = head.querySelector("span");
     bar = root.querySelector(".p-bar");
     elapsedEl = root.querySelector(".p-time.l");
     remainEl = root.querySelector(".p-time.r");
@@ -227,7 +213,6 @@
     var pct = d ? Math.max(0, Math.min(1, now / d)) : 0;
     fill.style.transform = "scaleX(" + pct.toFixed(4) + ")";
     head.style.transform = "translate3d(" + Math.round(pct * barW) + "px,0,0)";
-    headTime.textContent = A.clock(now);
     elapsedEl.textContent = A.clock(now);
     remainEl.textContent = "-" + A.clock(Math.max(0, d - now));
   }
@@ -848,7 +833,6 @@
       try { p.setDisplayRect(0, 0, 1920, 1080); } catch (e6) {}
       try { p.setDisplayMethod("PLAYER_DISPLAY_MODE_LETTER_BOX"); } catch (e7) {}
       silent(true);
-      absorbAvTracks();
       try { p.play(); } catch (e8) {}
       started = true;
       paused = false;
@@ -857,10 +841,6 @@
       if (mode === "direct" && item.resumeAt > 1000) {
         try { p.seekTo(Math.floor(item.resumeAt)); } catch (e9) {}
       }
-      /* The resume seek may not have landed yet, so a restart from here
-         reopens at resumeAt rather than at the clock's current reading. */
-      if (!applyAudio()) { noDirect = true; started = false; restart("Switching audio"); return; }
-      if (!applySub()) { started = false; restart("Preparing subtitles"); return; }
       paintBtns();
       startPolling();
       P.timeline(item, "playing", position(), session);
@@ -877,9 +857,9 @@
     triedTranscode = true;
     base = Math.max(0, fromMs || 0);
     relative = null;
-    burned = burnFor(curSub());
-    streamAudio = sel.audio;
-    openAv(P.transcodeUrl(item, session, base, { audio: sel.audio, sub: burned }));
+    burned = 0;
+    streamAudio = 0;
+    openAv(P.transcodeUrl(item, session, base, {}));
   }
 
   function fail(why) {
@@ -1041,7 +1021,6 @@
       it.resumeAt = o.resume && A.progress(it) ? it.offset : 0;
       initialSelection(it);
       fillInfo();
-      applySubStyle();
       zone = "bar";
       tab = 0;
       zoneClasses();
@@ -1058,7 +1037,6 @@
         var frame = A.$("pv-frame");
         frame.src = it.frame || it.hero;
         status("");
-        applySub();
         paint();
         startPolling();
         bump();

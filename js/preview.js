@@ -223,7 +223,14 @@
   P.syncList = function () { return resolve(); };
   P.subtitleText = function () { return Promise.reject(new Error("preview")); };
 
-  P.playable = function (it) { tracks(it); return resolve(it); };
+  P.playable = function (it) { return resolve(it); };
+
+  P.removeFromContinue = function (it) {
+    for (var i = continueRow.length - 1; i >= 0; i--) {
+      if (continueRow[i].key === it.key) continueRow.splice(i, 1);
+    }
+    return resolve({});
+  };
 
   P.selectStreams = function () { return resolve({}); };
 

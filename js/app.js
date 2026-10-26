@@ -357,6 +357,71 @@
     return "";
   }
 
+  /* The title a long press can take out of Continue Watching: a poster,
+     a search result, a library card, or an episode on its show page. */
+  function focusedSelection() {
+    if (App.screen !== "main" || App.overlay === "player" || App.sheetOpen) return null;
+    if (App.overlay === "detail") {
+      var d = A.views.detail;
+      if (d.zone === "episodes" && d.row) return d.row.item();
+      return null;
+    }
+    if (App.zone !== "content") return null;
+    var v = App.view();
+    return v && v.current ? v.current() : null;
+  }
+
+  var sheetEl, sheetButtons, sheetIndex, sheetItem;
+  App.sheetOpen = false;
+
+  function paintSheet() {
+    var btns = sheetButtons;
+    for (var i = 0; i < btns.length; i++) btns[i].classList.toggle("on", i === sheetIndex);
+  }
+
+  App.openRemove = function (it) {
+    if (!it) return;
+    sheetEl = sheetEl || A.$("sheet");
+    sheetButtons = sheetEl.querySelectorAll(".btn");
+    sheetItem = it;
+    sheetIndex = 0;
+    var name = it.type === "episode" ? it.showTitle + " \u00b7 " + (it.label || it.title) : it.title;
+    sheetEl.querySelector(".sheet-title").textContent = name;
+    sheetEl.querySelector(".sheet-sub").textContent = "Take this out of Continue Watching. You can still resume it from its page.";
+    paintSheet();
+    App.sheetOpen = true;
+    sheetEl.classList.add("on");
+  };
+
+  App.closeSheet = function () {
+    App.sheetOpen = false;
+    sheetItem = null;
+    if (sheetEl) sheetEl.classList.remove("on");
+  };
+
+  App.sheetKey = function (k) {
+    if (k === "back" || (k === "ok" && sheetButtons[sheetIndex].getAttribute("data-act") === "cancel")) {
+      App.closeSheet();
+      return;
+    }
+    if (k === "up" || k === "left") { sheetIndex = 0; paintSheet(); return; }
+    if (k === "down" || k === "right") { sheetIndex = 1; paintSheet(); return; }
+    if (k !== "ok") return;
+    var it = sheetItem;
+    App.closeSheet();
+    A.src.removeFromContinue(it).then(function () {
+      var changed = A.Cache.dropContinue(it);
+      var tab = TABS[App.tab];
+      if (tab.view === "browse" && changed.indexOf(tab.id) !== -1) {
+        var snap = A.Cache.get(tab.id);
+        if (snap) A.views.browse.update(tab.id, snap.d);
+      }
+      A.toast("Removed from Continue Watching", 2000);
+    }, function () {
+      A.toast("Couldn\u2019t remove it from Continue Watching.");
+    });
+  };
+
   /* Holding Up on the tab bar (nothing above it) for about a second forces
      a refresh; key repeat delivers a steady stream of "up" presses. */
   var upStart = 0;
@@ -415,6 +480,12 @@
     lastArrow = now;
   }
 
+  /* OK is handled on release. A hold longer than this, on a title that is
+     in progress, opens Remove from Continue Watching instead of the page. */
+  var okAt = 0;
+  var okArmed = false;
+  var HOLD_OK = 650;
+
   document.addEventListener("keydown", function (e) {
     /* While the TV keyboard is up the field owns every key, and
        preventDefault() there would stop the text from being inserted. */
@@ -422,8 +493,25 @@
     var k = keyName(e);
     if (!k) return;
     e.preventDefault();
+    if (App.sheetOpen) { App.sheetKey(k); return; }
+    if (k === "ok") {
+      if (!okArmed) { okAt = Date.now(); okArmed = true; }
+      return;
+    }
+    okArmed = false;
     trackSpeed(k);
     App.key(k, k === "char" ? e.key.toLowerCase() : "");
+  });
+
+  document.addEventListener("keyup", function (e) {
+    if (e.target && e.target.id === "search-input") return;
+    if (keyName(e) !== "ok" || !okArmed) return;
+    okArmed = false;
+    e.preventDefault();
+    var held = Date.now() - okAt > HOLD_OK;
+    var it = held ? focusedSelection() : null;
+    if (it && A.progress(it)) { App.openRemove(it); return; }
+    App.key("ok");
   });
 
   function registerKeys() {

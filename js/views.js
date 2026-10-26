@@ -641,6 +641,11 @@
     this.paintSide();
   };
 
+  Library.prototype.current = function () {
+    if (this.zone !== "grid") return null;
+    return this.items[this.i] || null;
+  };
+
   Library.prototype.blur = function () {
     this.focused = false;
     A.blurCard(this.cardAt(this.i));
@@ -880,6 +885,12 @@
     }
     var first = this.rows[0] && this.rows[0].item();
     if (first) this.bd.set(first.blur);
+  };
+
+  Search.prototype.current = function () {
+    if (this.zone !== "rows") return null;
+    var row = this.rows[this.r];
+    return row ? row.item() : null;
   };
 
   Search.prototype.place = function () {

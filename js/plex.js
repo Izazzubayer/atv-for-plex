@@ -4,7 +4,7 @@
   var A = window.ATV;
   var TV = "https://plex.tv/api/v2";
   var PRODUCT = "ATV for Plex";
-  var VERSION = "1.0.9";
+  var VERSION = "1.0.10";
   var TYPES = { movie: 1, show: 1, season: 1, episode: 1 };
 
   var clientId = localStorage.getItem("atv.clientId");
@@ -534,6 +534,17 @@
     });
   };
 
+  /* Hide an in-progress title from Continue Watching. Progress on the
+     item itself is left alone, so Resume still works from its page. */
+  P.removeFromContinue = function (it) {
+    return P.request(P.server.uri + "/actions/removeFromContinueWatching", {
+      token: P.server.token,
+      method: "PUT",
+      timeout: 8000,
+      params: { ratingKey: it.key }
+    });
+  };
+
   /* ---------- My List ---------- */
 
   /* A normal Plex playlist named "My List" is the bucket, so the same
@@ -761,13 +772,11 @@
     }, function () {});
   };
 
-  /* List rows often carry a part key and no Stream array (or only one of
-     them). An empty array is truthy, so trusting it skipped the fetch and
-     the chooser had nothing to show. Always read the full item once.
-     includeExternalMedia is what Plex's own player sends for sidecar subs. */
+  /* A hub item already carries the part key playback needs. Fetch the full
+     record only when that key is missing. */
   P.playable = function (it) {
-    if (it.streamsLoaded && it.partKey) return Promise.resolve(it);
-    return get("/library/metadata/" + it.key, { includeExternalMedia: 1 }).then(function (mc) {
+    if (it.partKey) return Promise.resolve(it);
+    return get("/library/metadata/" + it.key).then(function (mc) {
       var m = (mc.Metadata || [])[0];
       if (!m) return it;
       var full = P.map(m);
