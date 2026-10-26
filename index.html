@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080, user-scalable=no">
+  <title>ATV for Plex</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app">
+
+    <section id="screen-browse" class="screen tab-screen">
+      <div class="bd"><img class="bd-img" alt=""><img class="bd-img" alt=""></div>
+      <div class="scrim scrim-hero"></div>
+      <div class="hero">
+        <img class="logo gone" alt="">
+        <h1 class="big-title"></h1>
+        <div class="meta"></div>
+        <div class="summary"></div>
+      </div>
+      <div class="rows-clip"><div class="rows"></div></div>
+      <div class="empty">Nothing here yet.</div>
+    </section>
+
+    <section id="screen-search" class="screen tab-screen">
+      <div class="bd soft"><img class="bd-img" alt=""><img class="bd-img" alt=""></div>
+      <div class="scrim scrim-dim"></div>
+      <div class="search-bar">
+        <div class="search-box">
+          <span class="search-ico"></span>
+          <input id="search-input" type="search" autocomplete="off" autocorrect="off"
+                 autocapitalize="off" spellcheck="false" maxlength="60"
+                 inputmode="search" enterkeyhint="search"
+                 placeholder="Shows, Movies, and More">
+        </div>
+        <div class="search-voice"><span class="voice-ico"></span><span>Voice</span></div>
+      </div>
+      <div class="search-hint"></div>
+      <div class="rows-clip"><div class="rows"></div></div>
+    </section>
+
+    <section id="screen-library" class="screen tab-screen">
+      <div class="bd soft"><img class="bd-img" alt=""><img class="bd-img" alt=""></div>
+      <div class="scrim scrim-dim"></div>
+      <div class="side">
+        <div class="side-head">Library</div>
+        <div class="side-list"></div>
+      </div>
+      <div class="grid-title"></div>
+      <div class="grid-clip"><div class="grid"></div></div>
+    </section>
+
+    <section id="screen-detail" class="screen">
+      <div class="bd bd-main"><img class="bd-img" alt=""><img class="bd-img" alt=""></div>
+      <div class="scrim scrim-detail"></div>
+      <div class="bd bd-blur soft"><img class="bd-img" alt=""><img class="bd-img" alt=""><div class="scrim scrim-dim"></div></div>
+      <div class="detail-page">
+        <div class="d-copy">
+          <img class="logo gone" alt="">
+          <h1 class="big-title"></h1>
+          <div class="meta"></div>
+          <div class="buttons"></div>
+          <div class="summary"></div>
+          <div class="d-people"></div>
+        </div>
+        <div class="d-mini"></div>
+        <div class="d-seasons"></div>
+        <div class="d-episodes"></div>
+        <div class="d-info"></div>
+      </div>
+    </section>
+
+    <section id="screen-player" class="screen">
+      <object id="av" type="application/avplayer"></object>
+      <img id="pv-frame" alt="">
+      <div class="p-chrome">
+        <div class="p-shade"></div>
+        <div class="p-panel">
+          <div class="p-tabs"></div>
+          <div class="p-info-body">
+            <div class="p-info-art"><img alt=""></div>
+            <div class="p-info-copy">
+              <h2></h2>
+              <div class="meta"></div>
+              <div class="summary"></div>
+            </div>
+          </div>
+          <div class="p-list"><div class="p-list-in"></div></div>
+        </div>
+        <div class="p-bottom">
+          <div class="p-kicker"></div>
+          <div class="p-title"></div>
+          <div class="p-bar focus">
+            <div class="p-track"><div class="p-fill"></div></div>
+            <div class="p-head"><span>0:00</span><i></i></div>
+          </div>
+          <div class="p-times">
+            <span class="p-time l">0:00</span>
+            <span class="p-time r">-0:00</span>
+          </div>
+          <div class="p-transport">
+            <div class="p-btn"></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-subs"><span></span></div>
+      <div class="p-state"></div>
+      <div class="p-status"></div>
+    </section>
+
+    <section id="screen-login" class="screen">
+      <div class="center" style="top:150px">
+        <div class="login-glyph"></div>
+        <h1 class="login-title">Sign In to Plex</h1>
+        <p class="login-sub">On your phone or computer, go to <b>plex.tv/link</b><br>and enter this code.</p>
+        <div class="code wait"></div>
+        <div class="login-status"></div>
+        <div class="login-btns buttons"><div class="btn"><span>Get a New Code</span></div></div>
+      </div>
+    </section>
+
+    <section id="screen-loading" class="screen">
+      <div class="center" style="top:470px">
+        <span class="spinner big"></span>
+        <div id="loading-text" class="loading-text"></div>
+      </div>
+    </section>
+
+    <div id="nav" class="hidden"></div>
+    <div id="toast"></div>
+  </div>
+
+  <script>
+    window.onerror = function (msg, src, line) {
+      var el = document.getElementById("toast");
+      if (el) { el.innerHTML = "<span>" + String(msg).replace(/</g, "&lt;") + " (" + line + ")</span>"; el.className = "on"; }
+    };
+  </script>
+  <script src="$WEBAPIS/webapis/webapis.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/plex.js"></script>
+  <script src="js/cache.js"></script>
+  <script src="js/views.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

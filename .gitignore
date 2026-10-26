@@ -1,0 +1,5 @@
+.DS_Store
+.manifest.tmp
+*.wgt
+author-signature.xml
+signature1.xml
